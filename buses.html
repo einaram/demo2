@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173d40">
+  <title>Halden Bus Board</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #173d40;
+      --muted: #647777;
+      --paper: #f3f5ef;
+      --line: #dce4dc;
+      --sea: #c9e6d9;
+      --coral: #e87959;
+      --sun: #f3c76b;
+      --white: #fffefa;
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    button { font: inherit; }
+    .page { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+    .topbar { min-height: 82px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--ink); border-radius: 50%; color: var(--coral); font-family: var(--serif); font-size: 19px; }
+    .brand-name { font-size: 11px; font-weight: 750; letter-spacing: 1.5px; }
+    .brand-sub { margin-top: 3px; color: var(--muted); font-size: 10px; letter-spacing: 1.1px; }
+    .top-right { display: flex; align-items: center; gap: 18px; }
+    .live-label { display: flex; gap: 7px; align-items: center; color: var(--muted); font-size: 11px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4b9b77; box-shadow: 0 0 0 3px #4b9b7722; }
+    .refresh { width: 36px; height: 36px; display: grid; place-items: center; cursor: pointer; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 50%; transition: background .2s, transform .2s; }
+    .refresh:hover { background: white; transform: rotate(20deg); }
+    .refresh:disabled { opacity: .5; cursor: wait; }
+    .refresh svg { width: 16px; height: 16px; }
+    .spin { animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hero { position: relative; overflow: hidden; min-height: 265px; margin-top: 27px; padding: 38px 44px; color: #f8f8ed; background: var(--ink); display: flex; align-items: center; justify-content: space-between; }
+    .hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .2; background: radial-gradient(ellipse at 86% 16%, #a9d7c6 0 1px, transparent 1.5px); background-size: 19px 19px; }
+    .hero-copy, .route-stamp { position: relative; z-index: 1; }
+    .eyebrow { color: #acd0c0; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    h1 { margin: 11px 0 0; font-family: var(--serif); font-size: clamp(42px, 6vw, 65px); font-weight: 400; line-height: 1; }
+    .hero-note { margin-top: 13px; color: #c4d5ca; font-size: 13px; }
+    .route-stamp { width: 122px; height: 122px; display: grid; place-items: center; border: 1px solid #c9e6d980; border-radius: 50%; color: var(--sun); font-family: var(--serif); font-size: 60px; transform: rotate(-8deg); }
+    .hero-rule { position: absolute; right: 0; bottom: 0; width: 38%; height: 5px; background: var(--coral); }
+
+    .board-intro { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 29px 0 14px; }
+    .board-intro h2 { margin: 0; font-family: var(--serif); font-size: 25px; font-weight: 400; }
+    .board-intro p { margin: 0; color: var(--muted); font-size: 11px; }
+    .stops { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .stop { min-width: 0; border-top: 3px solid var(--sea); background: var(--white); }
+    .stop.school { border-top-color: var(--coral); }
+    .stop-head { min-height: 81px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 20px 14px; border-bottom: 1px solid var(--line); }
+    .stop-title { margin: 0; font-family: var(--serif); font-size: 24px; font-weight: 400; }
+    .stop-id { margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .stop-kind { padding: 6px 8px; color: var(--ink); background: #e9f1e9; font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; white-space: nowrap; }
+    .school .stop-kind { color: #a34a34; background: #f8e9e2; }
+    .departures { min-height: 208px; }
+    .departure { display: grid; grid-template-columns: 72px 58px minmax(0, 1fr); align-items: center; gap: 13px; min-height: 73px; padding: 12px 20px; border-bottom: 1px solid #e8ede7; }
+    .departure:last-child { border-bottom: 0; }
+    .departure-time { font-family: var(--serif); font-size: 27px; font-variant-numeric: tabular-nums; }
+    .departure-time small { display: block; margin-top: 2px; color: var(--muted); font-family: var(--sans); font-size: 9px; }
+    .line-number { min-width: 48px; min-height: 38px; display: grid; place-items: center; padding: 4px; background: var(--ink); color: white; font-size: 14px; font-weight: 700; }
+    .destination { overflow: hidden; font-size: 12px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+    .departure-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .realtime { color: #337b5e; font-weight: 650; }
+    .empty { min-height: 208px; display: flex; flex-direction: column; justify-content: center; padding: 25px 22px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .empty strong { margin-bottom: 5px; color: var(--ink); font-family: var(--serif); font-size: 21px; font-weight: 400; }
+    .loading { color: #a9b5ad; }
+    .error { display: none; margin: 20px 0 0; padding: 15px 18px; border-left: 3px solid var(--coral); background: var(--white); font-size: 13px; line-height: 1.5; }
+    .error strong { display: block; margin-bottom: 4px; }
+    .walk-note { display: flex; align-items: center; gap: 11px; margin: 22px 0 31px; padding: 14px 17px; border-left: 2px solid var(--sun); color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .walk-icon { flex: 0 0 auto; color: var(--coral); font-size: 17px; }
+    .footer { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .footer a { color: var(--ink); text-decoration-color: #a9c2b5; text-underline-offset: 3px; }
+
+    @media (max-width: 760px) {
+      .page { width: min(100% - 32px, 560px); }
+      .topbar { min-height: 70px; }
+      .hero { min-height: 235px; margin-top: 16px; padding: 30px 24px; }
+      .route-stamp { width: 92px; height: 92px; font-size: 47px; }
+      .stops { grid-template-columns: 1fr; gap: 15px; }
+      .departures, .empty { min-height: auto; }
+      .board-intro { align-items: flex-start; flex-direction: column; gap: 6px; }
+    }
+    @media (max-width: 390px) {
+      .page { width: calc(100% - 24px); }
+      .hero { padding: 25px 16px; }
+      h1 { font-size: 39px; }
+      .route-stamp { width: 74px; height: 74px; font-size: 38px; }
+      .departure { grid-template-columns: 61px 48px minmax(0, 1fr); gap: 9px; padding: 11px 13px; }
+      .departure-time { font-size: 24px; }
+      .line-number { min-width: 43px; }
+      .stop-head { padding-right: 14px; padding-left: 14px; }
+      .footer { align-items: flex-start; padding: 15px 0; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">H</div>
+        <div><div class="brand-name">HALDEN TRANSIT</div><div class="brand-sub">ØSTFOLD, NORWAY</div></div>
+      </div>
+      <div class="top-right">
+        <div class="live-label"><span class="live-dot"></span><span id="updated">Connecting to Entur</span></div>
+        <button class="refresh" id="refresh" type="button" aria-label="Refresh departures" title="Refresh departures">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero" aria-label="Halden bus departures">
+      <div class="hero-copy">
+        <div class="eyebrow">Live departures · Risum</div>
+        <h1>On the way.</h1>
+        <div class="hero-note" id="clock">Your next connection around Halden</div>
+      </div>
+      <div class="route-stamp" aria-hidden="true">R</div>
+      <div class="hero-rule" aria-hidden="true"></div>
+    </section>
+
+    <div class="board-intro">
+      <h2>Departure board</h2>
+      <p>Upcoming services · times shown in Norway time</p>
+    </div>
+
+    <div class="stops">
+      <section class="stop" aria-labelledby="risum-title">
+        <div class="stop-head">
+          <div><h3 class="stop-title" id="risum-title">Risum</h3><div class="stop-id">NSR:StopPlace:2695</div></div>
+          <span class="stop-kind">Local stop</span>
+        </div>
+        <div class="departures" id="risumDepartures" aria-live="polite"><div class="empty loading">Loading departures…</div></div>
+      </section>
+
+      <section class="stop school" aria-labelledby="school-title">
+        <div class="stop-head">
+          <div><h3 class="stop-title" id="school-title">Risum vgs.</h3><div class="stop-id">NSR:StopPlace:2697</div></div>
+          <span class="stop-kind">School stop</span>
+        </div>
+        <div class="departures" id="schoolDepartures" aria-live="polite"><div class="empty loading">Loading departures…</div></div>
+      </section>
+    </div>
+
+    <div class="walk-note"><span class="walk-icon" aria-hidden="true">↗</span><span>Risum vgs. is the school stop. Risum is a short walk away and may show more regular service; check both boards when planning your trip.</span></div>
+    <div class="error" id="error" role="alert"></div>
+
+    <footer class="footer">
+      <span>Departure data from Entur JourneyPlanner · Østfold kollektivtrafikk</span>
+      <a href="https://api.entur.io/geocoder/v1/autocomplete?text=Risum%20Halden" target="_blank" rel="noreferrer">Find stops with Entur ↗</a>
+    </footer>
+  </main>
+
+  <script>
+    const API_URL = "https://api.entur.io/journey-planner/v3/graphql";
+    const CLIENT_NAME = "halden-vgs-schoolproject-busapp";
+    const TIME_ZONE = "Europe/Oslo";
+    const QUERY = `query HaldenDepartures {
+      risum: stopPlace(id: "NSR:StopPlace:2695") {
+        name
+        estimatedCalls(numberOfDepartures: 12, timeRange: 86400) {
+          realtime
+          aimedDepartureTime
+          expectedDepartureTime
+          destinationDisplay { frontText }
+          quay { name }
+          serviceJourney { journeyPattern { line { publicCode name } } }
+        }
+      }
+      school: stopPlace(id: "NSR:StopPlace:2697") {
+        name
+        estimatedCalls(numberOfDepartures: 12, timeRange: 86400) {
+          realtime
+          aimedDepartureTime
+          expectedDepartureTime
+          destinationDisplay { frontText }
+          quay { name }
+          serviceJourney { journeyPattern { line { publicCode name } } }
+        }
+      }
+    }`;
+
+    const $ = (id) => document.getElementById(id);
+    const timeFormatter = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hour: "2-digit", minute: "2-digit" });
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[character]);
+    }
+
+    function renderStop(containerId, stop) {
+      const container = $(containerId);
+      const calls = [...(stop?.estimatedCalls ?? [])].sort((a, b) => {
+        const aTime = new Date(a.expectedDepartureTime || a.aimedDepartureTime).getTime();
+        const bTime = new Date(b.expectedDepartureTime || b.aimedDepartureTime).getTime();
+        return aTime - bTime;
+      });
+      if (!calls.length) {
+        container.innerHTML = '<div class="empty"><strong>No upcoming departures</strong>No services are listed for this stop in the next 24 hours. School buses may only run on school days.</div>';
+        return;
+      }
+      container.innerHTML = calls.map((call) => {
+        const expected = call.expectedDepartureTime || call.aimedDepartureTime;
+        const aimed = call.aimedDepartureTime;
+        const line = call.serviceJourney?.journeyPattern?.line;
+        const destination = call.destinationDisplay?.frontText || line?.name || "Destination not listed";
+        const lineNumber = line?.publicCode || "BUS";
+        const quay = call.quay?.name ? `Quay ${call.quay.name}` : "Departure";
+        const isRealtime = Boolean(call.realtime);
+        const delay = aimed && expected ? Math.round((new Date(expected) - new Date(aimed)) / 60000) : 0;
+        const liveText = isRealtime ? (delay > 0 ? `Live · ${delay} min late` : "Live") : "Scheduled";
+        return `<article class="departure">
+          <time class="departure-time" datetime="${escapeHtml(expected)}">${timeFormatter.format(new Date(expected))}<small>${escapeHtml(quay)}</small></time>
+          <span class="line-number">${escapeHtml(lineNumber)}</span>
+          <div><div class="destination" title="${escapeHtml(destination)}">${escapeHtml(destination)}</div><div class="departure-meta"><span class="${isRealtime ? "realtime" : ""}">${escapeHtml(liveText)}</span></div></div>
+        </article>`;
+      }).join("");
+    }
+
+    async function loadDepartures() {
+      const button = $("refresh");
+      const error = $("error");
+      button.disabled = true;
+      button.querySelector("svg").classList.add("spin");
+      error.style.display = "none";
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "ET-Client-Name": CLIENT_NAME
+          },
+          body: JSON.stringify({ query: QUERY }),
+          cache: "no-store"
+        });
+        if (!response.ok) throw new Error(`Entur returned HTTP ${response.status}.`);
+        const result = await response.json();
+        if (result.errors?.length) throw new Error(result.errors.map((item) => item.message).join(" "));
+        if (!result.data) throw new Error("Entur returned no departure data.");
+        renderStop("risumDepartures", result.data.risum);
+        renderStop("schoolDepartures", result.data.school);
+        $("updated").textContent = `Updated ${timeFormatter.format(new Date())}`;
+        $("clock").textContent = `Live board · ${new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date())}`;
+      } catch (reason) {
+        error.innerHTML = `<strong>Could not load departures.</strong>${escapeHtml(reason.message)} Check your connection and refresh the board.`;
+        error.style.display = "block";
+        $("updated").textContent = "Board unavailable";
+        $("risumDepartures").innerHTML = '<div class="empty">Live departures could not be loaded.</div>';
+        $("schoolDepartures").innerHTML = '<div class="empty">Live departures could not be loaded.</div>';
+      } finally {
+        button.disabled = false;
+        button.querySelector("svg").classList.remove("spin");
+      }
+    }
+
+    $("refresh").addEventListener("click", loadDepartures);
+    loadDepartures();
+  </script>
+</body>
+</html>
